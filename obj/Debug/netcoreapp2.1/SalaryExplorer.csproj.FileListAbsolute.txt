@@ -1,0 +1,11 @@
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\bin\Debug\netcoreapp2.1\SalaryExplorer.deps.json
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\bin\Debug\netcoreapp2.1\SalaryExplorer.runtimeconfig.json
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\bin\Debug\netcoreapp2.1\SalaryExplorer.runtimeconfig.dev.json
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\bin\Debug\netcoreapp2.1\SalaryExplorer.dll
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\bin\Debug\netcoreapp2.1\SalaryExplorer.pdb
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Debug\netcoreapp2.1\SalaryExplorer.csprojAssemblyReference.cache
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Debug\netcoreapp2.1\SalaryExplorer.csproj.CoreCompileInputs.cache
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Debug\netcoreapp2.1\SalaryExplorer.AssemblyInfoInputs.cache
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Debug\netcoreapp2.1\SalaryExplorer.AssemblyInfo.cs
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Debug\netcoreapp2.1\SalaryExplorer.dll
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Debug\netcoreapp2.1\SalaryExplorer.pdb

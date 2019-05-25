@@ -8,8 +8,8 @@ namespace SalaryExplorer.Data.Settings
   public static class ConnectionSettings
   {
     public static readonly string SalaryConnString =
-      @"Data Source=YourServer;Initial Catalog=YourDatabaseName;
-      Integrated Security=False; User Id=dataUser; Password=password;";
+      @"Data Source=192.155.91.104;Initial Catalog=Data;
+      Integrated Security=False; User Id=dataUser; Password=data$user_dude_rt&x;";
 
   }
 }
