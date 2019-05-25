@@ -1,0 +1,74 @@
+<!--The content below is only a placeholder and can be replaced.-->
+<div class="center cool-font">
+  <h1>Louisville, KY Public Salary Searcher</h1>
+</div>
+
+<div class="center cool-font">
+  <form class="pure-form pure-form-aligned">
+    <fieldset>
+
+      <div class="pure-control-group">
+        <label class="cool-font" for="name">First Name</label>
+        <input id="name" type="text" name="FirstName" [(ngModel)]="record.FirstName" placeholder="First Name">
+      </div>
+
+      <div class="pure-control-group">
+        <label class="cool-font" for="name">Last Name</label>
+        <input id="name" type="text" name="LastName" [(ngModel)]="record.LastName" placeholder="Last Name">
+      </div>
+
+      <div class="pure-control-group">
+        <label class="cool-font" for="password">Salary</label>
+        <input id="password" name="AnnualRate" [(ngModel)]="record.AnnualRate" placeholder="Salary">
+      </div>
+
+      <div class="pure-control-group">
+        <label class="cool-font" for="email">Job Title</label>
+        <input id="email" name="JobTitle" [(ngModel)]="record.JobTitle" placeholder="Job Title">
+      </div>
+
+      <div class="pure-controls center">
+        <button (click)="Send()" class="pure-button pure-button-primary">Search</button>
+      </div>
+    </fieldset>
+  </form>
+</div>
+
+<!--<input type="text" [(ngModel)]="record.EmployeeName" placeholder="Name" /><br/>
+<input type="text" [(ngModel)]="record.AnnualRate" placeholder="Annual Rate" /><br/>
+<input type="text" [(ngModel)]="record.JobTitle" placeholder="Job Title" /><br/>
+<button (click)="Send()">Submit</button>-->
+<div *ngIf="records && records.length == 0" class="center cool-font">
+  <h2>No records found</h2>
+</div>
+<table class="pure-table pure-table-horizontal" *ngIf="records && records.length > 0">
+  <thead>
+    <tr>
+      <th>CalendarYear</th>
+      <th>EmployeeName</th>
+      <th>Department</th>
+      <th>JobTitle</th>
+      <th>AnnualRate</th>
+      <th>RegularRate</th>
+      <th>OvertimeRate</th>
+      <th>IncentiveAllowance</th>
+      <th>Other</th>
+      <th>YearToDate</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr class="pure-table-odd" *ngFor="let record of records">
+      <td>{{record.calendarYear}}</td>
+      <td>{{record.employeeName}}</td>
+      <td>{{record.department}}</td>
+      <td>{{record.jobTitle}}</td>
+      <td>{{record.annualRate}}</td>
+      <td>{{record.regularRate}}</td>
+      <td>{{record.overtimeRate}}</td>
+      <td>{{record.incentiveAllowance}}</td>
+      <td>{{record.other}}</td>
+      <td>{{record.yearToDate}}</td>
+    </tr>
+  </tbody>
+</table>
