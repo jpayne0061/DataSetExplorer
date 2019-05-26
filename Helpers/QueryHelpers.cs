@@ -1,4 +1,7 @@
+using Newtonsoft.Json.Linq;
 using SalaryExplorer.Models;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace SalaryExplorer.Helpers
@@ -44,6 +47,8 @@ namespace SalaryExplorer.Helpers
 
     public static string GetClause(string propName, string value)
     {
+      value = value.Trim();
+
       string leadingOperator = LeadingOperator(value);
       string trailingOperator = TrailingOperator(value);
 
@@ -67,7 +72,7 @@ namespace SalaryExplorer.Helpers
       return clause;
     }
 
-    public static string BuildQuery(RecordInput record)
+    public static string BuildQuery(dynamic record)
     {
       string query = "select top 100";
 
@@ -84,7 +89,42 @@ namespace SalaryExplorer.Helpers
       for (int i = 0; i < properties.Length; i++)
       {
         object val = properties[i].GetValue(record);
-        if (val == null || string.IsNullOrEmpty(val.ToString()))
+        if (val == null || string.IsNullOrEmpty(val.ToString()) || string.IsNullOrWhiteSpace(val.ToString()))
+        {
+          continue;
+        }
+
+        string propName = properties[i].Name;
+
+        string clause = QueryHelpers.GetClause(propName, (string)val);
+
+        query += query.Contains("where") ? " AND " + clause : "where " + clause;
+      }
+
+      return query;
+    }
+
+    public static string BuildQuery(JObject record)
+    {
+      string query = "select top 100";
+
+      //PropertyInfo[] properties = record.GetType().GetProperties();
+
+      List<JProperty> properties = record.Properties().ToList();
+
+      for (int i = 0; i < properties.Count; i++)
+      {
+        string propName = properties[i].Name;
+        query += i == 0 ? " " + propName : "," + propName;
+      }
+
+      query += " from dbo.SalaryData ";
+
+      for (int i = 0; i < properties.Count; i++)
+      {
+        
+        object val = (string)record.SelectToken(properties[i].Name);
+        if (val == null || string.IsNullOrEmpty(val.ToString()) || string.IsNullOrWhiteSpace(val.ToString()))
         {
           continue;
         }

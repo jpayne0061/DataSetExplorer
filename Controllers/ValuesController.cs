@@ -10,6 +10,8 @@ using SalaryExplorer.Helpers;
 using System.Data;
 using SalaryExplorer.Data.Get;
 using SalaryExplorer.Data.Settings;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace SalaryExplorer.Controllers
 {
@@ -37,15 +39,15 @@ public class ValuesController : Controller
         return "value";
     }
 
-    // POST api/values
-    [HttpPost]
-    public async Task<List<RecordInput>> Post([FromBody] RecordInput record)
+    //POST api/values
+   [HttpPost]
+    public async Task<List<JObject>> Post([FromBody] object record)
     {
       try
       {
-        string query = QueryHelpers.BuildQuery(record);
+        string query = QueryHelpers.BuildQuery((JObject)record);
 
-        List<RecordInput> records = await _dal.GetData<RecordInput>(query, ConnectionSettings.SalaryConnString);
+        List<JObject> records = _dal.GetData(query, ConnectionSettings.SalaryConnString, (JObject)record);
 
         return records;
       }
@@ -56,5 +58,5 @@ public class ValuesController : Controller
       }
     }
 
-}
+  }
 }

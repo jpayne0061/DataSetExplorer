@@ -1,4 +1,6 @@
+using Newtonsoft.Json.Linq;
 using SalaryExplorer.Data.Interfaces;
+using SalaryExplorer.ExtensionMethods;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -48,11 +50,11 @@ namespace SalaryExplorer.Data.Get
       }
     }
 
-    public List<dynamic> GetData(string query, string connStr)
+    public List<JObject> GetData(string query, string connStr, JObject record)
     {
       try
       {
-        var data = new List<dynamic>();
+        var data = new List<JObject>();
         using (var conn = new SqlConnection(connStr))
 
         using (var command = new SqlCommand(query, conn))
@@ -63,15 +65,14 @@ namespace SalaryExplorer.Data.Get
 
           while (rdr.Read())
           {
-            dynamic obj = new System.Dynamic.ExpandoObject();
+            JObject obj = new JObject();
 
-            PropertyInfo[] properties = obj.GetType().GetProperties();
+            List<JProperty> properties = record.Properties().ToList();
 
-            foreach (PropertyInfo pi in properties)
+            foreach (JProperty pi in properties)
             {
-              object val = rdr[pi.Name];
-              pi.SetValue(obj, val);
-
+              string val = rdr[pi.Name].ToString();
+              obj[pi.Name.FirstCharToLower()] = val;
             }
             data.Add(obj);
           }

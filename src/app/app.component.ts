@@ -4,19 +4,19 @@ import { map } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 
 class Record {
-  public SalaryDataID: number;
-  public CalendarYear: number;
+  public SalaryDataID: string;
+  public CalendarYear: string;
   public EmployeeName: string;
   public Department: string;
   public FirstName: string;
   public LastName: string;
   public JobTitle: string;
-  public AnnualRate: number;
-  public RegularRate: number;
-  public OvertimeRate: number;
-  public IncentiveAllowance: number;
-  public Other: number;
-  public YearToDate: number;
+  public AnnualRate: string;
+  public RegularRate: string;
+  public OvertimeRate: string;
+  public IncentiveAllowance: string;
+  public Other: string;
+  public YearToDate: string;
 }
 
 
@@ -29,11 +29,25 @@ class Record {
 })
 export class AppComponent {
 
-  public record: Record;
+  public record: Record = {
+    SalaryDataID: " ",
+    CalendarYear: " ",
+    EmployeeName: " ",
+    Department: " ",
+    FirstName: " ",
+    LastName: " ",
+    JobTitle: " ",
+    AnnualRate: " ",
+    RegularRate: " ",
+    OvertimeRate: " ",
+    IncentiveAllowance: " ",
+    Other: " ",
+    YearToDate: " "
+  };
   public records: Record[];
 
   constructor(private http: HttpClient) {
-    this.record = new Record();
+
   }
 
   public Send() {
