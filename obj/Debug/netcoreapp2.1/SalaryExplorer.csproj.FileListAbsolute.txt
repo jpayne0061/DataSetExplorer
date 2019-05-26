@@ -8,3 +8,4 @@ C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\
 C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Debug\netcoreapp2.1\SalaryExplorer.AssemblyInfo.cs
 C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Debug\netcoreapp2.1\SalaryExplorer.dll
 C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Debug\netcoreapp2.1\SalaryExplorer.pdb
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Debug\netcoreapp2.1\SalaryExplorer.csprojAssemblyReference.cache
