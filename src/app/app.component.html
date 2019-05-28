@@ -3,16 +3,20 @@
   <h1>Louisville, KY Public Salary Searcher</h1>
 </div>
 
-<div class="center cool-font">
+<app-upload></app-upload>
+
+<div class="center cool-font" *ngIf="record">
   <form class="pure-form pure-form-aligned">
     <fieldset>
 
-      <div class="pure-control-group">
-        <label class="cool-font" for="name">First Name</label>
-        <input id="name" type="text" name="FirstName" [(ngModel)]="record.FirstName" placeholder="First Name">
+      <div class="pure-control-group" *ngFor="let column of columns">
+        <span *ngIf="column.visible == 'true'">
+          <label class="cool-font" for="name">{{column.displayName}}</label>
+          <input id="name" type="text" name="FirstName" [(ngModel)]="record[column.columnName]" placeholder="First Name">
+        </span>
       </div>
 
-      <div class="pure-control-group">
+      <!--<div class="pure-control-group">
         <label class="cool-font" for="name">Last Name</label>
         <input id="name" type="text" name="LastName" [(ngModel)]="record.LastName" placeholder="Last Name">
       </div>
@@ -25,7 +29,7 @@
       <div class="pure-control-group">
         <label class="cool-font" for="email">Job Title</label>
         <input id="email" name="JobTitle" [(ngModel)]="record.JobTitle" placeholder="Job Title">
-      </div>
+      </div>-->
 
       <div class="pure-controls center">
         <button (click)="Send()" class="pure-button pure-button-primary">Search</button>
@@ -44,31 +48,13 @@
 <table class="pure-table pure-table-horizontal" *ngIf="records && records.length > 0">
   <thead>
     <tr>
-      <th>CalendarYear</th>
-      <th>EmployeeName</th>
-      <th>Department</th>
-      <th>JobTitle</th>
-      <th>AnnualRate</th>
-      <th>RegularRate</th>
-      <th>OvertimeRate</th>
-      <th>IncentiveAllowance</th>
-      <th>Other</th>
-      <th>YearToDate</th>
+      <th *ngFor="let column of columns">{{column.columnName}}</th>
     </tr>
   </thead>
 
   <tbody>
     <tr class="pure-table-odd" *ngFor="let record of records">
-      <td>{{record.calendarYear}}</td>
-      <td>{{record.employeeName}}</td>
-      <td>{{record.department}}</td>
-      <td>{{record.jobTitle}}</td>
-      <td>{{record.annualRate}}</td>
-      <td>{{record.regularRate}}</td>
-      <td>{{record.overtimeRate}}</td>
-      <td>{{record.incentiveAllowance}}</td>
-      <td>{{record.other}}</td>
-      <td>{{record.yearToDate}}</td>
+      <td *ngFor="let column of columns" [innerHTML]="record[column.columnName]"></td>
     </tr>
   </tbody>
 </table>

@@ -13,7 +13,6 @@ namespace SalaryExplorer.Data.Get
 {
   public class Dal
   {
-
     public async Task<List<T>> GetData<T>(string query, string connStr) where T : new()
     {
       try
@@ -43,6 +42,96 @@ namespace SalaryExplorer.Data.Get
           }
         }
         return data;
+      }
+      catch (Exception ex)
+      {
+        throw;
+      }
+    }
+
+    public async Task<List<T>> GetData<T>(Dictionary<string, string> param, string procName, string connStr) where T : new()
+    {
+      try
+      {
+        var data = new List<T>();
+        using (var conn = new SqlConnection(connStr))
+
+        using (var command = new SqlCommand(procName, conn))
+        {
+          command.CommandType = CommandType.StoredProcedure;
+
+          foreach(KeyValuePair<string, string> kvp in param)
+          {
+            command.Parameters.AddWithValue(kvp.Key, kvp.Value);
+          }
+
+          await conn.OpenAsync();
+
+          var rdr = await command.ExecuteReaderAsync();
+
+          while (await rdr.ReadAsync())
+          {
+            T obj = new T();
+
+            PropertyInfo[] properties = obj.GetType().GetProperties();
+
+            foreach (PropertyInfo pi in properties)
+            {
+              object val = rdr[pi.Name];
+              pi.SetValue(obj, val.ToString());
+
+            }
+            data.Add(obj);
+          }
+        }
+        return data;
+      }
+      catch (Exception ex)
+      {
+        throw;
+      }
+    }
+
+    public async Task<int> NonQuery(Dictionary<string, string> param, string procName, string connStr)
+    {
+      try
+      {
+        using (var conn = new SqlConnection(connStr))
+
+        using (var command = new SqlCommand(procName, conn))
+        {
+          command.CommandType = CommandType.StoredProcedure;
+
+          foreach (KeyValuePair<string, string> kvp in param)
+          {
+            command.Parameters.AddWithValue(kvp.Key, kvp.Value);
+          }
+
+          await conn.OpenAsync();
+
+          int id = Convert.ToInt32(command.ExecuteScalar());
+          return id;
+         }
+      }
+      catch (Exception ex)
+      {
+        throw;
+      }
+    }
+
+
+    public async Task NonQueryByStatement(string statement, string connStr)
+    {
+      try
+      {
+        using (var conn = new SqlConnection(connStr))
+
+        using (var command = new SqlCommand(statement, conn))
+        {
+          await conn.OpenAsync();
+
+          await command.ExecuteNonQueryAsync();
+        }
       }
       catch (Exception ex)
       {

@@ -7,10 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="src\models\column.ts" />
+    <None Remove="src\models\tableFile.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="TableFiles\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="12.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
@@ -18,6 +25,11 @@
 
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="src\models\column.ts" />
+    <TypeScriptCompile Include="src\models\tableFile.ts" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

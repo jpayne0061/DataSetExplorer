@@ -1,0 +1,30 @@
+<div class="row" style="margin-bottom:15px;">
+  <div class="col-md-3">
+    <input type="file" #file placeholder="Choose file" (change)="uploadFile(file.files)" style="display:none;">
+    <button type="button" class="btn btn-success" (click)="file.click()">Upload File</button>
+  </div>
+  <div class="col-md-4">
+    <span class="upload" *ngIf="progress > 0">
+      {{progress}}%
+    </span>
+    <span class="upload" *ngIf="message">
+      {{message}}
+    </span>
+  </div>
+</div>
+
+<div class="row" style="margin-bottom:15px;" *ngIf="tableFile">
+  <div class="col-md-3">
+    <h2>{{tableFile.PrepareTableName()}}</h2>
+  </div>
+  <div class="col-md-4">
+    <div *ngFor="let col of tableFile.columns">
+      <span>{{col.columnName}} :</span> <input type="text" name="name" value="" [(ngModel)]="col.type"/>
+    </div>
+  </div>
+  <div>
+    <h3>Description</h3>
+    <input type="text" name="name" value="" [(ngModel)]="tableFile.description" />
+  </div>
+  <button (click)="CreateTable()">Create Table</button>
+</div>

@@ -7,8 +7,11 @@ namespace SalaryExplorer.Data.Settings
 {
   public static class ConnectionSettings
   {
-    public static readonly string SalaryConnString =
+    public static readonly string ExploreConnString =
       @"";
+
+    public static readonly string InsertConnString =
+  @"";
 
   }
 }

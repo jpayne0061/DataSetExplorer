@@ -18,8 +18,8 @@ namespace SalaryExplorer.ExtensionMethods
     {
       switch (input)
       {
-        case null: throw new ArgumentNullException(nameof(input));
-        case "": throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input));
+        case null: return null;
+        case "": return "";
         default: return input.First().ToString().ToLower() + input.Substring(1);
       }
     }
