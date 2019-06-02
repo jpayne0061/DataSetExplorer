@@ -1,30 +1,97 @@
-<div class="row" style="margin-bottom:15px;">
-  <div class="col-md-3">
-    <input type="file" #file placeholder="Choose file" (change)="uploadFile(file.files)" style="display:none;">
-    <button type="button" class="btn btn-success" (click)="file.click()">Upload File</button>
+<div class="pure-g cool-font" *ngIf="!dataStatus">
+    <div class="row center" style="margin-bottom:15px;" *ngIf="!tableFile">
+      <div class="col-md-3">
+        <input type="file" #file placeholder="Choose file" (change)="uploadFile(file.files)" style="display:none;">
+        <button type="button" class="pure-button pure-button-primary" (click)="file.click()">New Data Set</button>
+      </div>
+      <div class="col-md-4">
+        <span class="upload" *ngIf="progress > 0">
+          {{progress}}%
+        </span>
+        <span class="upload" *ngIf="message">
+          {{message}}
+        </span>
+      </div>
+    </div>
+
+    <div class="row" style="margin-bottom:15px;" *ngIf="tableFile">
+      <div class="col-md-3">
+        <h2>{{tableFile.fileName}}</h2>
+      </div>
+      <form class="pure-form pure-form-aligned">
+        <fieldset>
+          <div class="pure-control-group">
+            <div>
+              <label class="cool-font" for="name"><strong style="font-size: 1.2em">Data Set Title</strong></label>
+            </div>
+            <input id="dataSetInput" type="text" name="dataSetName" [(ngModel)]="tableFile.dataSetTitle" placeholder="">
+          </div>
+        </fieldset>
+      </form>
+
+      <div class="col-md-4">
+        <div *ngFor="let col of tableFile.columns" style="margin-bottom: 20px">
+          <form class="pure-form pure-form-aligned">
+            <fieldset>
+              <div>
+                <label><strong style="font-size: 1.2em">{{col.columnName}}</strong></label>
+              </div>
+              <select class="pure-input-1-2" [(ngModel)]="col.type" style="width: 200px; margin-bottom: 10px" name="first">
+                <option value="" disabled selected>Select a Data Type</option>
+                <option value="1">varchar(500) (default)</option>
+                <option value="2">int (whole numbers)</option>
+                <option value="3">decimal</option>
+                <option value="4">money</option>
+                <option value="5">datetime</option>
+              </select>
+
+              <div>
+                <input type="text" name="dataSetName" [(ngModel)]="col.displayName" placeholder="DisplayName">
+              </div>
+
+
+              <label for="terms" class="pure-checkbox">
+                <input id="terms" type="checkbox" [(ngModel)]="col.visible" name="first"> Searchable
+              </label>
+
+            </fieldset>
+          </form>
+        </div>
+      </div>
+      <div>
+        <form class="pure-form pure-form-aligned">
+          <fieldset>
+            <div>
+              <label class="cool-font" for="name">
+                <strong>Data Set Description</strong>
+              </label>
+            </div>
+            <textarea type="text" name="name" value="" [(ngModel)]="tableFile.description" rows="3" cols="70"></textarea>
+            <div class="pure-controls center">
+              <button (click)="CreateTable()" class="pure-button pure-button-primary">Create Table</button>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+</div>
+
+<div class="base-font">
+  <div *ngIf="dataStatus">
+    <h2 class="center">Update log</h2>
+    <div class="center">
+      <h3 *ngFor="let update of dataStatus">{{dataStatus}}</h3>
+    </div>
   </div>
-  <div class="col-md-4">
-    <span class="upload" *ngIf="progress > 0">
-      {{progress}}%
-    </span>
-    <span class="upload" *ngIf="message">
-      {{message}}
-    </span>
+
+  <div *ngIf="rows">
+    <h3 class="center">{{rows}} rows found</h3>
+  </div>
+
+  <div *ngIf="rowUpdate">
+    <h3 class="center">Processing Rows...</h3>
+    <h3 class="center">{{rowUpdate}} rows processed</h3>
   </div>
 </div>
 
-<div class="row" style="margin-bottom:15px;" *ngIf="tableFile">
-  <div class="col-md-3">
-    <h2>{{tableFile.PrepareTableName()}}</h2>
-  </div>
-  <div class="col-md-4">
-    <div *ngFor="let col of tableFile.columns">
-      <span>{{col.columnName}} :</span> <input type="text" name="name" value="" [(ngModel)]="col.type"/>
-    </div>
-  </div>
-  <div>
-    <h3>Description</h3>
-    <input type="text" name="name" value="" [(ngModel)]="tableFile.description" />
-  </div>
-  <button (click)="CreateTable()">Create Table</button>
-</div>
+

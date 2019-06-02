@@ -3,6 +3,7 @@ import { HttpEventType, HttpClient } from '@angular/common/http';
 import { TableFile } from '../../models/tableFile';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { HubConnection, HubConnectionBuilder } from '@aspnet/signalr';
 
 @Component({
   selector: 'app-upload',
@@ -16,13 +17,61 @@ export class UploadComponent implements OnInit {
   public progress: number;
   public message: string;
   @Output() public onUploadFinished = new EventEmitter();
+  @Output() public uploadStarted = new EventEmitter<boolean>();
 
-  constructor(private http: HttpClient) { }
+  public dataStatus: string[];
+  public rows: number;
+  public rowUpdate: number;
+
+  private hubConnection: HubConnection;
+  msgs: string[] = [];
+
+  constructor(private http: HttpClient) {
+    this.startSignalR();
+  }
 
   ngOnInit() {
+
+  }
+
+  public startSignalR() {
+    let builder = new HubConnectionBuilder();
+
+    // as per setup in the startup.cs
+    this.hubConnection = builder.withUrl('/models/echo').build();
+
+    this.hubConnection.on("data update", (message) => {
+      console.log(message);
+      if (!this.dataStatus) {
+        this.dataStatus = [];
+      }
+
+      this.dataStatus.push(message);
+    });
+
+    this.hubConnection.on("row update", (message) => {
+      console.log(message);
+      this.rowUpdate = message;
+    });
+
+    this.hubConnection.on("rows found", (message) => {
+      console.log(message);
+      this.rows = message;
+    });
+
+    this.hubConnection.on("complete", (message) => {
+      console.log(message);
+      location.reload();
+    });
+
+    // starting the connection
+    this.hubConnection.start();
   }
 
   public uploadFile = (files) => {
+
+    this.uploadStarted.emit(true);
+
     if (files.length === 0) {
       return;
     }

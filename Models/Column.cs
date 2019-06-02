@@ -12,5 +12,7 @@ namespace SalaryExplorer.Models
     public string Visible { get; set; }
     public string TableName { get; set; }
     public string Type { get; set; }
+    public string Pseudonym { get; set; }
+    public string DataSetTitle { get; set; }
   }
 }

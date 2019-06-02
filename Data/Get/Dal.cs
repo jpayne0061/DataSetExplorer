@@ -1,6 +1,8 @@
 using Newtonsoft.Json.Linq;
 using SalaryExplorer.Data.Interfaces;
 using SalaryExplorer.ExtensionMethods;
+using SalaryExplorer.Models;
+using SalaryExplorer.Settings;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -92,6 +94,41 @@ namespace SalaryExplorer.Data.Get
       }
     }
 
+    public async Task<List<TableFile>> GetTableFiles(string connStr)
+    {
+      try
+      {
+        var data = new List<TableFile>();
+        using (var conn = new SqlConnection(connStr))
+
+        using (var command = new SqlCommand("GetTables", conn))
+        {
+          command.CommandType = CommandType.StoredProcedure;
+
+          await conn.OpenAsync();
+
+          var rdr = await command.ExecuteReaderAsync();
+
+          while (await rdr.ReadAsync())
+          {
+            TableFile tb = new TableFile();
+
+            tb.TableName = Convert.ToString(rdr["DataSetTitle"]);
+            tb.TableGuid = Convert.ToString(rdr["TableGuid"]);
+            tb.DataSetTitle = Convert.ToString(rdr["DataSetTitle"]);
+            tb.Description = Convert.ToString(rdr["Description"]);
+
+            data.Add(tb);
+          }
+        }
+        return data;
+      }
+      catch (Exception ex)
+      {
+        throw;
+      }
+    }
+
     public async Task<int> NonQuery(Dictionary<string, string> param, string procName, string connStr)
     {
       try
@@ -139,7 +176,41 @@ namespace SalaryExplorer.Data.Get
       }
     }
 
-    public List<JObject> GetData(string query, string connStr, JObject record)
+    public async Task ExecuteInsertObject(TableFile tableFile, string insertStatement, Dictionary<string, string> ParameterMap, string connStr, int numStatements, int start, int total)
+    {
+      SqlCommand command;
+
+      try
+      {
+        using (var conn = new SqlConnection(connStr))
+        {
+          using (command = new SqlCommand(insertStatement, conn))
+          {
+            for (int i = start; i < start + numStatements; i++)
+            {
+              if(i > total)
+              {
+                break;
+              }
+              for (int j = 0; j < tableFile.Columns.Count; j++)
+              {
+                command.Parameters.AddWithValue("@" + i.ToString() + tableFile.Columns[j].Pseudonym.Replace("-", ""),
+                                  ((object)ParameterMap["@" + i.ToString() + tableFile.Columns[j].Pseudonym.Replace("-", "")]) ?? DBNull.Value);
+              }
+            }
+
+            await conn.OpenAsync();
+            await command.ExecuteNonQueryAsync();
+          }
+        }
+      }
+      catch (Exception ex)
+      {
+        throw;
+      }
+    }
+
+    public List<JObject> GetData(string query, string connStr, JObject record, Dictionary<string, string> colNameToPsedonym)
     {
       try
       {
@@ -160,8 +231,13 @@ namespace SalaryExplorer.Data.Get
 
             foreach (JProperty pi in properties)
             {
-              string val = rdr[pi.Name].ToString();
-              obj[pi.Name.FirstCharToLower()] = val;
+              if (pi.Name == Configurations.ProtectedPropertyTableName)
+              {
+                continue;
+              }
+
+              string val = rdr[colNameToPsedonym[pi.Name.ToLower()]].ToString();
+              obj[pi.Name.ToLower()] = val;
             }
             data.Add(obj);
           }

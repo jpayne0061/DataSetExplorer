@@ -3,5 +3,7 @@ export class Column {
   public displayName: string;
   public visible: string;
   public tableName: string;
-  public type: string;
+  public type: number = 0;
+  public pseudonym: string;
+  public dataSetTitle: string;
 }

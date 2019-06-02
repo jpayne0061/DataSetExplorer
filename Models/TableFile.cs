@@ -1,8 +1,10 @@
 using CsvHelper;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -14,6 +16,8 @@ namespace SalaryExplorer.Models
     public List<Column> Columns { get; set; }
     public string Description { get; set; }
     public string TableName { get; set; }
+    public string DataSetTitle { get; set; }
+    public string TableGuid { get; set; }
 
     public string GetTableName()
     {
@@ -67,61 +71,115 @@ namespace SalaryExplorer.Models
       return map;
     }
 
-    public string GetInsertStatement(string fullPath)
+    public InsertObject GetInsertStatement(string fullPath, string tableGuid)
     {
-      string allInserts = "";
+      //foreach row...
+      //try parse each data type, if fail, then NULL
+      //if read fails, then skip row
+
+      StringBuilder allInserts = new StringBuilder("");
 
       Dictionary<string, int> map = CreateColNameToIndexMap(fullPath);
 
       Dictionary<string, Column> colMap = CreateColNameToColumnMap();
 
+      Dictionary<string, string> commandParameters = new Dictionary<string, string>();
+      int count = 0;
+
       using (StreamReader sr = new StreamReader(fullPath))
       using (var csv = new CsvReader(sr))
       {
-        csv.Read();
-        csv.ReadHeader();
-        while (csv.Read())
+        csv.Configuration.BadDataFound = context =>
         {
-          string insertStatement = "INSERT INTO " + TableName +
-                      " ( " + String.Join(",", Columns.Select(x => x.ColumnName)) + ") VALUES (";
+            //skip
+        };
 
-          for (var i = 0; i < Columns.Count; i++)
+        csv.Configuration.PrepareHeaderForMatch = (string header, int index) => header.ToLower();
+        try
+        {
+          csv.Read();
+          csv.ReadHeader();
+          while (csv.Read())
           {
-            insertStatement += "'" + csv.GetField(Columns[i].ColumnName) + "'";
-            if (i != Columns.Count - 1)
+            string insertStatement = "INSERT INTO " + "[" + tableGuid + "]" +
+                      " ( " + String.Join(",", Columns.Select(x => "[" + x.Pseudonym + "]")) + ") VALUES (" +
+
+            String.Join(",", Columns.Select(x => "@" + count.ToString() + x.Pseudonym.Replace("-", ""))) + ");";
+
+            for (var i = 0; i < Columns.Count; i++)
             {
-              insertStatement += ",";
+              commandParameters["@" + count.ToString() + Columns[i].Pseudonym.Replace("-", "")] = csv.GetField(Columns[i].ColumnName);
+
+              //insertStatement += "'" + csv.GetField(Columns[i].ColumnName) + "'";
+              //if (i != Columns.Count - 1)
+              //{
+              //  insertStatement += ",";
+              //}
             }
+//            insertStatement += @")
+//;" ;
 
+            allInserts.Append(insertStatement);
+            count += 1;
           }
-          insertStatement += @")
-
-";
-
-          allInserts += insertStatement;
-
+        }
+        catch (Exception ex)
+        {
+          //do something
         }
       }
 
-      return allInserts;
+      string allInsertStatements = allInserts.ToString();
+
+      InsertObject insertObject = new InsertObject();
+      insertObject.ParameterMap = commandParameters;
+      insertObject.InsertStatements = allInsertStatements.TrimEnd(';');
+      insertObject.RowCount = count;
+      //SqlCommand dbCommand = new SqlCommand(allInsertStatements, connection);
+
+      //foreach(KeyValuePair<string, string> kvp in commandParameters)
+      //{
+      //  dbCommand.Parameters.AddWithValue(kvp.Key, kvp.Value);
+      //}
+
+      return insertObject;
     }
 
-    public string CreateTableStatement(string fullPath, TableFile tableFile)
+    public string CreateTableStatement(string fullPath, TableFile tableFile, string tableGuid)
     {
       string createStatement = @"Create Table @TableName(";
 
       for (int i = 0; i < tableFile.Columns.Count; i++)
       {
+        string type = "varchar(500)";
+
+        switch (tableFile.Columns[i].Type)
+        {
+          case "1":
+            type = "varchar(500)";
+            break;
+          case "2":
+            type = "int";
+            break;
+          case "3":
+            type = "decimal";
+            break;
+          case "4":
+            type = "money";
+            break;
+          case "5":
+            type = "datetime";
+            break;
+        }
+
         if (i == tableFile.Columns.Count - 1)
         {
-          createStatement += tableFile.Columns[i].ColumnName + " " + tableFile.Columns[i].Type;
+          createStatement += "[" + tableFile.Columns[i].Pseudonym + "] " + type;
         }
         else
         {
-          createStatement += tableFile.Columns[i].ColumnName + " " + tableFile.Columns[i].Type + ", ";
+          createStatement += "[" + tableFile.Columns[i].Pseudonym + "] " + type + ", ";
         }
-
-        
       }
 
       createStatement.TrimEnd(' ');
@@ -129,7 +187,7 @@ namespace SalaryExplorer.Models
 
       TableName = tableFile.GetTableName();
 
-      createStatement = createStatement.Replace("@TableName", TableName);
+      createStatement = createStatement.Replace("@TableName", "[" + tableGuid + "]");
 
       createStatement += ")";
 

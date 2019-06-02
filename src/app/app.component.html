@@ -1,60 +1,50 @@
 <!--The content below is only a placeholder and can be replaced.-->
-<div class="center cool-font">
-  <h1>Louisville, KY Public Salary Searcher</h1>
+
+<div class="pure-g cool-font">
+  <div class="pure-u-1 pure-u-md-1-3"></div>
+  <div class="pure-u-1 pure-u-md-1-3">
+    <div *ngIf="!hide">
+      <h1>Data Set Explorer</h1>
+      <p style="margin-bottom: 30px">Search through data sets. Or upload your own data set and create an interactive search tool</p>
+    </div>
+
+
+    <!--<div class="pure-controls center">
+      <button routerLink="/new-data-set" class="pure-button pure-button-primary" (click)="setDataSet('0')">New Data Set</button>
+    </div>-->
+
+    <app-upload (uploadStarted)="hideDataSets()" *ngIf="!hideUpload"></app-upload>  
+
+    <div class="" style="margin-top: 60px" *ngIf="!hide">
+      <div (click)="setDataSet(dataSet.tableGuid)" class="pointer"
+           *ngFor="let dataSet of tableFiles" style="border: 2px solid #d8d8d8;
+                                                  border-radius: 4px; margin-bottom: 20px; padding: 10px 15px;" >
+        <h3 style="margin-bottom: 10px">{{dataSet.dataSetTitle}}</h3>
+        <p>
+          {{dataSet.description}}
+        </p>
+      </div>
+    </div>
+
+
+  </div>
+  <div class="pure-u-1 pure-u-md-1-3"></div>
 </div>
 
-<app-upload></app-upload>
+<!--<div class="pure-menu pure-menu-horizontal cool-font" style="margin-left: 5%">
+  <ul class="pure-menu-list">
+    <li class="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
+      <a href="#" id="menuLink1" class="pure-menu-link" style="font-size: 1.3em">Data Sets</a>
+      <ul class="pure-menu-children">
+        <li class="pure-menu-item"><a href="#" routerLink="/new-data-set" class="pure-menu-link" (click)="setDataSet('0')">new data set</a></li>
+        <li class="pure-menu-item" *ngFor="let dataSet of tableFiles"><a href="#" class="pure-menu-link" (click)="setDataSet(dataSet.tableGuid)">{{dataSet.tableName}}</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>-->
 
-<div class="center cool-font" *ngIf="record">
-  <form class="pure-form pure-form-aligned">
-    <fieldset>
+<app-explore [parentSubject]="parentSubject"></app-explore>
 
-      <div class="pure-control-group" *ngFor="let column of columns">
-        <span *ngIf="column.visible == 'true'">
-          <label class="cool-font" for="name">{{column.displayName}}</label>
-          <input id="name" type="text" name="FirstName" [(ngModel)]="record[column.columnName]" placeholder="First Name">
-        </span>
-      </div>
 
-      <!--<div class="pure-control-group">
-        <label class="cool-font" for="name">Last Name</label>
-        <input id="name" type="text" name="LastName" [(ngModel)]="record.LastName" placeholder="Last Name">
-      </div>
+<router-outlet></router-outlet>
 
-      <div class="pure-control-group">
-        <label class="cool-font" for="password">Salary</label>
-        <input id="password" name="AnnualRate" [(ngModel)]="record.AnnualRate" placeholder="Salary">
-      </div>
-
-      <div class="pure-control-group">
-        <label class="cool-font" for="email">Job Title</label>
-        <input id="email" name="JobTitle" [(ngModel)]="record.JobTitle" placeholder="Job Title">
-      </div>-->
-
-      <div class="pure-controls center">
-        <button (click)="Send()" class="pure-button pure-button-primary">Search</button>
-      </div>
-    </fieldset>
-  </form>
-</div>
-
-<!--<input type="text" [(ngModel)]="record.EmployeeName" placeholder="Name" /><br/>
-<input type="text" [(ngModel)]="record.AnnualRate" placeholder="Annual Rate" /><br/>
-<input type="text" [(ngModel)]="record.JobTitle" placeholder="Job Title" /><br/>
-<button (click)="Send()">Submit</button>-->
-<div *ngIf="records && records.length == 0" class="center cool-font">
-  <h2>No records found</h2>
-</div>
-<table class="pure-table pure-table-horizontal" *ngIf="records && records.length > 0">
-  <thead>
-    <tr>
-      <th *ngFor="let column of columns">{{column.columnName}}</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr class="pure-table-odd" *ngFor="let record of records">
-      <td *ngFor="let column of columns" [innerHTML]="record[column.columnName]"></td>
-    </tr>
-  </tbody>
-</table>

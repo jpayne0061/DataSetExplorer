@@ -1,5 +1,6 @@
 using Newtonsoft.Json.Linq;
 using SalaryExplorer.Models;
+using SalaryExplorer.Settings;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -64,7 +65,7 @@ namespace SalaryExplorer.Helpers
         leadingOperator = "=";
       }
 
-      string clause = propName + " " + leadingOperator + " '" + value + "' " + trailingOperator;
+      string clause = "[" + propName + "] " + leadingOperator + " '" + value + "' " + trailingOperator;
 
       clause = clause.Replace("% '", "'%");
       clause = clause.Replace("' %", "%'");
@@ -72,57 +73,34 @@ namespace SalaryExplorer.Helpers
       return clause;
     }
 
-    public static string BuildQuery(dynamic record)
+    public static string BuildQuery(JObject record, List<Column> columns)
     {
+      Dictionary<string, string> colNameToPsedonym = columns.ToDictionary(x => x.ColumnName, x => x.Pseudonym);
+
       string query = "select top 100";
 
-      PropertyInfo[] properties = record.GetType().GetProperties();
+      List<JProperty> properties = record.Properties().ToList();
 
-      for (int i = 0; i < properties.Length; i++)
+      int count = 0;
+      for (int i = 0; i < properties.Count; i++)
       {
         string propName = properties[i].Name;
-        query += i == 0 ? " " + propName : "," + propName;
-      }
 
-      query += " from dbo.SalaryData ";
-
-      for (int i = 0; i < properties.Length; i++)
-      {
-        object val = properties[i].GetValue(record);
-        if (val == null || string.IsNullOrEmpty(val.ToString()) || string.IsNullOrWhiteSpace(val.ToString()))
+        if (propName == Configurations.ProtectedPropertyTableName)
         {
           continue;
         }
 
-        string propName = properties[i].Name;
+        propName = propName.ToLower();
 
-        string clause = QueryHelpers.GetClause(propName, (string)val);
-
-        query += query.Contains("where") ? " AND " + clause : "where " + clause;
+        query += count == 0 ? " [" + colNameToPsedonym[propName] + "]" : ", [" + colNameToPsedonym[propName] + "]";
+        count += 1;
       }
 
-      return query;
-    }
-
-    public static string BuildQuery(JObject record)
-    {
-      string query = "select top 100";
-
-      //PropertyInfo[] properties = record.GetType().GetProperties();
-
-      List<JProperty> properties = record.Properties().ToList();
+      query += " from [" + (string)record.SelectToken(Configurations.ProtectedPropertyTableName) + "] ";
 
       for (int i = 0; i < properties.Count; i++)
       {
-        string propName = properties[i].Name;
-        query += i == 0 ? " " + propName : "," + propName;
-      }
-
-      query += " from dbo.SalaryData ";
-
-      for (int i = 0; i < properties.Count; i++)
-      {
-        
         object val = (string)record.SelectToken(properties[i].Name);
         if (val == null || string.IsNullOrEmpty(val.ToString()) || string.IsNullOrWhiteSpace(val.ToString()))
         {
@@ -131,7 +109,14 @@ namespace SalaryExplorer.Helpers
 
         string propName = properties[i].Name;
 
-        string clause = QueryHelpers.GetClause(propName, (string)val);
+        if (propName == Configurations.ProtectedPropertyTableName)
+        {
+          continue;
+        }
+
+        propName = propName.ToLower();
+
+        string clause = QueryHelpers.GetClause(colNameToPsedonym[propName], (string)val);
 
         query += query.Contains("where") ? " AND " + clause : "where " + clause;
       }

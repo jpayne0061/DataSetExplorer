@@ -13,5 +13,8 @@ namespace SalaryExplorer.Data.Settings
     public static readonly string InsertConnString =
   @"";
 
+    public static readonly string SaConnString =
+@"";
+
   }
 }

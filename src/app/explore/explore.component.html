@@ -1,0 +1,60 @@
+<div class="center cool-font" *ngIf="dataSetTitle">
+  <h1>{{dataSetTitle}}</h1>
+</div>
+
+<div class="center cool-font" *ngIf="columns && columns.length > 0">
+  <form class="pure-form pure-form-aligned">
+    <fieldset>
+
+      <div class="pure-control-group" *ngFor="let column of columns">
+        <span *ngIf="column.visible == 'true'">
+          <label class="cool-font" for="name">{{column.displayName}}</label>
+          <input id="name" type="text" name="FirstName" [(ngModel)]="record[column.columnName]" placeholder="First Name">
+        </span>
+      </div>
+
+      <!--<div class="pure-control-group">
+        <label class="cool-font" for="name">Last Name</label>
+        <input id="name" type="text" name="LastName" [(ngModel)]="record.LastName" placeholder="Last Name">
+      </div>
+
+      <div class="pure-control-group">
+        <label class="cool-font" for="password">Salary</label>
+        <input id="password" name="AnnualRate" [(ngModel)]="record.AnnualRate" placeholder="Salary">
+      </div>
+
+      <div class="pure-control-group">
+        <label class="cool-font" for="email">Job Title</label>
+        <input id="email" name="JobTitle" [(ngModel)]="record.JobTitle" placeholder="Job Title">
+      </div>-->
+
+      <div class="pure-controls center">
+        <button (click)="Send()" class="pure-button pure-button-primary">Search</button>
+      </div>
+    </fieldset>
+  </form>
+</div>
+
+<!--<input type="text" [(ngModel)]="record.EmployeeName" placeholder="Name" /><br/>
+<input type="text" [(ngModel)]="record.AnnualRate" placeholder="Annual Rate" /><br/>
+<input type="text" [(ngModel)]="record.JobTitle" placeholder="Job Title" /><br/>
+<button (click)="Send()">Submit</button>-->
+<div *ngIf="records && records.length == 0" class="center cool-font">
+  <h2>No records found</h2>
+</div>
+<div style="margin-bottom: 60px;">
+  <table class="pure-table pure-table-horizontal" *ngIf="records && records.length > 0" style="margin: auto;">
+    <thead>
+      <tr>
+        <th *ngFor="let column of columns" [innerHTML]="capitalizeFirstLetter(column.columnName)"></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr class="pure-table-odd" *ngFor="let record of records">
+        <td *ngFor="let column of columns" [innerHTML]="record[lowerFirstLetter(column.columnName)]"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
