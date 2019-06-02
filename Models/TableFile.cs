@@ -1,4 +1,7 @@
 using CsvHelper;
+using Microsoft.AspNetCore.SignalR;
+using SalaryExplorer.Data.Get;
+using SalaryExplorer.Data.Settings;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -73,10 +76,6 @@ namespace SalaryExplorer.Models
 
     public InsertObject GetInsertStatement(string fullPath, string tableGuid)
     {
-      //foreach row...
-      //try parse each data type, if fail, then NULL
-      //if read fails, then skip row
-
       StringBuilder allInserts = new StringBuilder("");
 
       Dictionary<string, int> map = CreateColNameToIndexMap(fullPath);
@@ -109,16 +108,7 @@ namespace SalaryExplorer.Models
             for (var i = 0; i < Columns.Count; i++)
             {
               commandParameters["@" + count.ToString() + Columns[i].Pseudonym.Replace("-", "")] = csv.GetField(Columns[i].ColumnName);
-
-              //insertStatement += "'" + csv.GetField(Columns[i].ColumnName) + "'";
-              //if (i != Columns.Count - 1)
-              //{
-              //  insertStatement += ",";
-              //}
             }
-//            insertStatement += @")
-//;" ;
-
             allInserts.Append(insertStatement);
             count += 1;
           }
@@ -135,14 +125,100 @@ namespace SalaryExplorer.Models
       insertObject.ParameterMap = commandParameters;
       insertObject.InsertStatements = allInsertStatements.TrimEnd(';');
       insertObject.RowCount = count;
-      //SqlCommand dbCommand = new SqlCommand(allInsertStatements, connection);
-
-      //foreach(KeyValuePair<string, string> kvp in commandParameters)
-      //{
-      //  dbCommand.Parameters.AddWithValue(kvp.Key, kvp.Value);
-      //}
 
       return insertObject;
+    }
+
+    public async void InsertColumns(int insertedId, Dal dal)
+    {
+      for (int i = 0; i < Columns.Count; i++)
+      {
+        string pseudonym = Guid.NewGuid().ToString();
+        Columns[i].Pseudonym = pseudonym;
+        string insertColumnprocName = "InsertTableColumn";
+        Dictionary<string, string> columnParam = new Dictionary<string, string>();
+        columnParam["@ColumnName"] = Columns[i].ColumnName;
+        columnParam["@Visible"] = Columns[i].Visible == null ? "0" : Columns[i].Visible;
+        columnParam["@DisplayName"] = Columns[i].DisplayName == null ? Columns[i].ColumnName : Columns[i].DisplayName.Replace("\"", "");
+        columnParam["@DataTableId"] = insertedId.ToString();
+        columnParam["@Type"] = Columns[i].Type ?? "varchar(500)";
+        columnParam["@Pseudonym"] = pseudonym;
+        await dal.NonQuery(columnParam, insertColumnprocName, ConnectionSettings.InsertConnString);
+      }
+    }
+
+    public async void CreateTableAndLoadData(string tableGuid, string pathToSave, string fullPath, Dal dal, IHubContext<SignalRHub> signalHubContext)
+    {
+      string createTableStatement = CreateTableStatement(fullPath, this, tableGuid);
+
+      try
+      {
+        await dal.NonQueryByStatement(createTableStatement, ConnectionSettings.InsertConnString);
+      }
+      catch (Exception ex)
+      {
+        await signalHubContext.Clients.All.SendAsync("data update", "table creation failed: " + ex.Message);
+        throw;
+      }
+
+      await signalHubContext.Clients.All.SendAsync("data update", "table created");
+
+      SqlConnection conn = new SqlConnection(ConnectionSettings.InsertConnString);
+
+      InsertObject insertObject;
+
+      try
+      {
+        insertObject = GetInsertStatement(fullPath, tableGuid);
+      }
+      catch (Exception ex)
+      {
+        await signalHubContext.Clients.All.SendAsync("data update", "DML statements failed: " + ex.Message);
+        throw;
+      }
+
+      await signalHubContext.Clients.All.SendAsync("rows found", insertObject.RowCount);
+
+      string[] splitStatements = insertObject.InsertStatements.Split(';');
+
+      InsertDataRows(splitStatements, dal, signalHubContext, insertObject);
+
+      await signalHubContext.Clients.All.SendAsync("complete", insertObject.RowCount);
+    }
+
+    public async Task<int> InsertDataTable(Dal dal, string tableGuid)
+    {
+      Columns.ForEach(col =>
+        col.ColumnName = col.ColumnName.Replace("\"", "").Replace("'", "").Replace("'", "").ToLower());
+
+      string procName = "InsertDataTable";
+
+      Dictionary<string, string> param = new Dictionary<string, string>();
+      param["@TableName"] = GetTableName();
+      param["@Description"] = Description == null ? "" : Description;
+      param["@Guid"] = tableGuid;
+      param["@DataSetTitle"] = DataSetTitle;
+      int id = await dal.NonQuery(param, procName, ConnectionSettings.InsertConnString);
+      return id;
+    }
+
+    public async void InsertDataRows(string[] splitStatements, Dal dal, IHubContext<SignalRHub> signalHubContext, InsertObject insertObject)
+    {
+      int maxRows = (int)((decimal)2000 / Columns.Count);
+
+      int numStatements = splitStatements.Length - 1;
+      int numToSkip = 0;
+
+      int numToProcess = Math.Min(3000, maxRows);
+
+      while (numStatements > 0)
+      {
+        string insert = string.Join("", splitStatements.Skip(numToSkip).Take(numToProcess));
+        await dal.ExecuteInsertObject(this, insert, insertObject.ParameterMap, ConnectionSettings.InsertConnString, numToProcess, numToSkip, splitStatements.Length - 1);
+        await signalHubContext.Clients.All.SendAsync("row update", numToSkip);
+        numToSkip += maxRows;
+        numStatements -= maxRows;
+      }
     }
 
     public string CreateTableStatement(string fullPath, TableFile tableFile, string tableGuid)
@@ -194,5 +270,16 @@ namespace SalaryExplorer.Models
       return createStatement;
     }
 
+    public async void RollBackInserts(int insertedId, Dal dal, string tableGuid)
+    {
+      string deleteColumns = "DELETE FROM TableColumns WHERE DataTableId = " + insertedId.ToString();
+      string deleteDataTable = "DELETE FROM DataTable WHERE DataTableId = " + insertedId.ToString();
+      string dropTable = "DROP TABLE IF EXISTS " + "[" + tableGuid + "]";
+
+      await dal.NonQueryByStatement(dropTable, ConnectionSettings.SaConnString);
+
+      await dal.NonQueryByStatement(deleteColumns, ConnectionSettings.SaConnString);
+      await dal.NonQueryByStatement(deleteDataTable, ConnectionSettings.SaConnString);
+    }
   }
 }

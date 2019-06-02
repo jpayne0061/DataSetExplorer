@@ -9,3 +9,6 @@ C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\
 C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Release\netcoreapp2.1\SalaryExplorer.AssemblyInfo.cs
 C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Release\netcoreapp2.1\SalaryExplorer.dll
 C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Release\netcoreapp2.1\SalaryExplorer.pdb
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Release\netcoreapp2.1\SalaryExplorer.RazorAssemblyInfo.cache
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Release\netcoreapp2.1\SalaryExplorer.RazorAssemblyInfo.cs
+C:\Users\Evan\source\repos\louisville-salary-explorer-master\SalaryExplorer\obj\Release\netcoreapp2.1\SalaryExplorer.RazorTargetAssemblyInfo.cache

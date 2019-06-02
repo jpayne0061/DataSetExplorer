@@ -51,6 +51,51 @@ namespace SalaryExplorer.Data.Get
       }
     }
 
+    public async Task<List<JObject>> GetDataWithParameters(Query query, string connStr, JObject record, Dictionary<string, string> colNameToPsedonym)
+    {
+      try
+      {
+        var data = new List<JObject>();
+        using (var conn = new SqlConnection(connStr))
+
+        using (var command = new SqlCommand(query.Body, conn))
+        {
+          foreach(KeyValuePair<string, string> kvp in query.Parameters)
+          {
+            command.Parameters.AddWithValue(kvp.Key, kvp.Value);
+          }
+
+          await conn.OpenAsync();
+
+          var rdr = await command.ExecuteReaderAsync();
+
+          while (await rdr.ReadAsync())
+          {
+            JObject obj = new JObject();
+
+            List<JProperty> properties = record.Properties().ToList();
+
+            foreach (JProperty pi in properties)
+            {
+              if (pi.Name == Configurations.ProtectedPropertyTableName)
+              {
+                continue;
+              }
+
+              string val = rdr[colNameToPsedonym[pi.Name.ToLower()]].ToString();
+              obj[pi.Name.ToLower()] = val;
+            }
+            data.Add(obj);
+          }
+        }
+        return data;
+      }
+      catch (Exception ex)
+      {
+        throw;
+      }
+    }
+
     public async Task<List<T>> GetData<T>(Dictionary<string, string> param, string procName, string connStr) where T : new()
     {
       try

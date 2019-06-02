@@ -21,7 +21,7 @@ namespace SalaryExplorer.Helpers
         case '<':
           return "<";
         case '*':
-          return "LIKE %";
+          return "LIKE '%' + ";
         case '>':
           return ">";
       }
@@ -40,13 +40,13 @@ namespace SalaryExplorer.Helpers
       switch (value[value.Length - 1])
       {
         case '*':
-          return "%";
+          return "+'%'";
       }
 
       return "";
     }
 
-    public static string GetClause(string propName, string value)
+    public static string GetClause(string propName, string value, Dictionary<string, string> parameters, Dictionary<string, string> colNameToPsedonym)
     {
       value = value.Trim();
 
@@ -56,16 +56,18 @@ namespace SalaryExplorer.Helpers
       value = string.IsNullOrEmpty(leadingOperator) ? value : value.Remove(0, 1);
       value = string.IsNullOrEmpty(trailingOperator) ? value : value.Substring(0, (value.Length - 1));
 
-      if (trailingOperator == "%")
+      parameters["@" + propName.Replace("-", "")] = (string)value;
+
+      if (trailingOperator == "+'%'")
       {
-        leadingOperator = " LIKE ";
+        leadingOperator = " LIKE '%' + ";
       }
       else if (string.IsNullOrEmpty(leadingOperator))
       {
         leadingOperator = "=";
       }
 
-      string clause = "[" + propName + "] " + leadingOperator + " '" + value + "' " + trailingOperator;
+      string clause = "[" + propName + "] " + leadingOperator + " @" + propName.Replace("-", "") + " " + trailingOperator;
 
       clause = clause.Replace("% '", "'%");
       clause = clause.Replace("' %", "%'");
@@ -73,9 +75,11 @@ namespace SalaryExplorer.Helpers
       return clause;
     }
 
-    public static string BuildQuery(JObject record, List<Column> columns)
+    public static Query BuildQuery(JObject record, List<Column> columns)
     {
       Dictionary<string, string> colNameToPsedonym = columns.ToDictionary(x => x.ColumnName, x => x.Pseudonym);
+
+      Dictionary<string, string> parameters = new Dictionary<string, string>();
 
       string query = "select top 100";
 
@@ -116,12 +120,12 @@ namespace SalaryExplorer.Helpers
 
         propName = propName.ToLower();
 
-        string clause = QueryHelpers.GetClause(colNameToPsedonym[propName], (string)val);
+        string clause = QueryHelpers.GetClause(colNameToPsedonym[propName], (string)val, parameters, colNameToPsedonym);
 
         query += query.Contains("where") ? " AND " + clause : "where " + clause;
       }
 
-      return query;
+      return new Query { Body = query, Parameters = parameters };
     }
 
   }
